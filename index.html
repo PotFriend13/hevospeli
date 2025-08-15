@@ -59,6 +59,33 @@
         video::-webkit-media-controls-timeline {
             display: none;
         }
+        
+        .gif-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            max-width: 1200px;
+            width: 95%;
+        }
+        
+        .gif-container {
+            width: calc(12.5% - 10px); /* 8 items per row with gap */
+            min-width: 380px;
+        }
+        
+        .gif-container img {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .gif-container img:hover {
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
@@ -74,8 +101,13 @@
         <button onclick="playRandom()">Random</button>
     </div>
 
+    <div class="gif-row" id="gifRow">
+        <!-- GIFs will be inserted here by JavaScript -->
+    </div>
+
     <script>
         const videoPlayer = document.getElementById('videoPlayer');
+        const gifRow = document.getElementById('gifRow');
         
         // Video sources (replace with your actual video paths)
         const videoSources = {
@@ -89,6 +121,19 @@
             video7: '7.mp4',
             video8: '8.mp4'
         };
+        
+        // Create and display the horse GIFs
+        for (let i = 1; i <= 8; i++) {
+            const gifContainer = document.createElement('div');
+            gifContainer.className = 'gif-container';
+            
+            const gifImg = document.createElement('img');
+            gifImg.src = `horse-${i}.gif`;
+            gifImg.alt = `Horse ${i}`;
+            
+            gifContainer.appendChild(gifImg);
+            gifRow.appendChild(gifContainer);
+        }
         
         function playVideo(videoKey) {
             if (videoSources[videoKey]) {

@@ -184,17 +184,20 @@
 
         // Play a video path (string). Encode URI parts to handle spaces.
         function playVideoPath(path) {
-            videoPlayer.src = encodeURI(path);
-            videoPlayer.play();
-
-            // additional measure to hide duration in some browsers
+            // additional measure to hide duration in some browsers: attach listener
+            // before setting src so it always catches the event even if metadata
+            // loads very quickly from cache.
             videoPlayer.addEventListener('loadedmetadata', function() {
                 const controls = videoPlayer.controls;
                 videoPlayer.controls = false;
+                // small delay to allow controls UI to update; restore previous state
                 setTimeout(() => {
                     videoPlayer.controls = controls;
-                }, 100);
+                }, 150);
             }, { once: true });
+
+            videoPlayer.src = encodeURI(path);
+            videoPlayer.play();
         }
 
         function playIntro() {

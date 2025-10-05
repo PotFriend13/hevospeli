@@ -99,6 +99,7 @@
     <div class="controls">
         <button onclick="playIntro()">Intro</button>
         <button onclick="playRandom()">Random</button>
+        <button id="seasonBtn" onclick="toggleSeason()">Season 2</button>
     </div>
 
     <div class="gif-row" id="gifRow">
@@ -108,58 +109,110 @@
     <script>
         const videoPlayer = document.getElementById('videoPlayer');
         const gifRow = document.getElementById('gifRow');
-        
-        // Video sources (replace with your actual video paths)
-        const videoSources = {
-            intro: 'intro.mp4',
-            video1: '1.mp4',
-            video2: '2.mp4',
-            video3: '3.mp4',
-            video4: '4.mp4',
-            video5: '5.mp4',
-            video6: '6.mp4',
-            video7: '7.mp4',
-            video8: '8.mp4'
-        };
-        
-        // Create and display the horse GIFs
-        for (let i = 1; i <= 8; i++) {
-            const gifContainer = document.createElement('div');
-            gifContainer.className = 'gif-container';
-            
-            const gifImg = document.createElement('img');
-            gifImg.src = `horse-${i}.gif`;
-            gifImg.alt = `Horse ${i}`;
-            
-            gifContainer.appendChild(gifImg);
-            gifRow.appendChild(gifContainer);
-        }
-        
-        function playVideo(videoKey) {
-            if (videoSources[videoKey]) {
-                videoPlayer.src = videoSources[videoKey];
-                videoPlayer.play();
-                
-                // Additional measure to hide duration in some browsers
-                videoPlayer.addEventListener('loadedmetadata', function() {
-                    const controls = videoPlayer.controls;
-                    videoPlayer.controls = false;
-                    setTimeout(() => {
-                        videoPlayer.controls = controls;
-                    }, 100);
-                });
+        const seasonBtn = document.getElementById('seasonBtn');
+
+        // Seasons configuration. Each season has its own GIF paths and winner video lists.
+        const seasons = {
+            1: {
+                name: 'season1',
+                intro: 'intro.mp4',
+                gifs: [
+                    'horse-1.gif','horse-2.gif','horse-3.gif','horse-4.gif',
+                    'horse-5.gif','horse-6.gif','horse-7.gif','horse-8.gif'
+                ],
+                // winner 1..8 each with an array of files (season 1 has one each)
+                winnerVideos: {
+                    1: ['1.mp4'],
+                    2: ['2.mp4'],
+                    3: ['3.mp4'],
+                    4: ['4.mp4'],
+                    5: ['5.mp4'],
+                    6: ['6.mp4'],
+                    7: ['7.mp4'],
+                    8: ['8.mp4']
+                }
+            },
+            2: {
+                name: 'season2',
+                intro: 'season2/intro.mp4',
+                gifs: [
+                    'season2/horse1.gif','season2/horse2.gif','season2/horse3.gif','season2/horse4.gif',
+                    'season2/horse5.gif','season2/horse6.gif','season2/horse7.gif','season2/horse8.gif'
+                ],
+                // season 2 has some winners with multiple video files
+                winnerVideos: {
+                    1: ['season2/winner 1.mp4'],
+                    2: ['season2/winner 2.mp4'],
+                    3: ['season2/winner 3.mp4','season2/winner 3_2.mp4'],
+                    4: ['season2/winner 4.mp4'],
+                    5: ['season2/winner 5.mp4'],
+                    6: ['season2/winner 6.mp4','season2/winner 6_2.mp4'],
+                    7: ['season2/winner 7.mp4'],
+                    8: ['season2/winner 8.mp4']
+                }
             }
+        };
+
+        // Current season (1 or 2)
+        let currentSeason = 1;
+
+        // Render GIFs for the active season
+        function renderGifs() {
+            // clear existing
+            gifRow.innerHTML = '';
+            const gifs = seasons[currentSeason].gifs;
+            gifs.forEach((src, idx) => {
+                const gifContainer = document.createElement('div');
+                gifContainer.className = 'gif-container';
+
+                const gifImg = document.createElement('img');
+                gifImg.src = src;
+                gifImg.alt = `Horse ${idx+1}`;
+
+                gifContainer.appendChild(gifImg);
+                gifRow.appendChild(gifContainer);
+            });
         }
-        
+
+        // Toggle between season 1 and 2. The button label reflects the season to switch TO.
+        function toggleSeason() {
+            currentSeason = currentSeason === 1 ? 2 : 1;
+            // Update button label to indicate the other season
+            seasonBtn.textContent = currentSeason === 1 ? 'Season 2' : 'Season 1';
+            renderGifs();
+        }
+
+        // Play a video path (string). Encode URI parts to handle spaces.
+        function playVideoPath(path) {
+            videoPlayer.src = encodeURI(path);
+            videoPlayer.play();
+
+            // additional measure to hide duration in some browsers
+            videoPlayer.addEventListener('loadedmetadata', function() {
+                const controls = videoPlayer.controls;
+                videoPlayer.controls = false;
+                setTimeout(() => {
+                    videoPlayer.controls = controls;
+                }, 100);
+            }, { once: true });
+        }
+
         function playIntro() {
-            playVideo('intro');
+            playVideoPath(seasons[currentSeason].intro);
         }
-        
+
+        // Choose a winner uniformly among 8 winners, then pick one of that winner's videos uniformly.
         function playRandom() {
-            const videos = ['video1', 'video2', 'video3', 'video4', 'video5', 'video6', 'video7', 'video8'];
-            const randomVideo = videos[Math.floor(Math.random() * videos.length)];
-            playVideo(randomVideo);
+            // pick winner id 1..8 uniformly
+            const winnerId = Math.floor(Math.random() * 8) + 1;
+            const files = seasons[currentSeason].winnerVideos[winnerId];
+            // pick one file among the winner's files uniformly
+            const file = files[Math.floor(Math.random() * files.length)];
+            playVideoPath(file);
         }
+
+        // initial render
+        renderGifs();
     </script>
 </body>
 </html>
